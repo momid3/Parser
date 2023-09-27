@@ -7,7 +7,7 @@ A general-purpose parser capable of parsing various data using custom programmat
 You can easily register the structures you want and match against them. The result is provided as instances of your registered classes, which include the tokens' index range of the structures as well as their parameters.
 
 ## Usage
-Heres how you would parse a simple while statement (the acutal implementation would be much more complex basicaly):
+Heres how you would parse a simple while statement (the acutal implementation would be much more complex basically):
 
 ```kotlin
 class While(var expression: Exp? = null, var codeBlock: CodeBlock? = null): Structure(
