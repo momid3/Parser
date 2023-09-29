@@ -31,7 +31,7 @@ fun Template.toExpression(): Expression? {
     }
 }
 
-private fun Template.toExpressionTemplateIfExpression(): Template {
+fun Template.toExpressionTemplateIfExpression(): Template {
     if (this is Expression) {
         return ExpressionTemplate(templateExpression = this)
     } else {

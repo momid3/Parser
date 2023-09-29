@@ -1,6 +1,5 @@
 package com.momid.parser.structure
 
-import com.momid.parser.While
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.isSubclassOf
@@ -40,18 +39,18 @@ class StructureFinder {
             break
         }
 
-        processStructureFinder(foundStructures, tokens)
+        processStructureFinder(this, foundStructures, tokens)
 
         return foundStructures
     }
 }
 
-fun processStructureFinder(finderResult: List<Structure>, tokens: List<Char>) {
+fun processStructureFinder(structureFinder: StructureFinder, finderResult: List<Structure>, tokens: List<Char>) {
     finderResult.forEach { structure ->
         if (structure is Continued) {
             val structureRange = structure.range
             if (structureRange != null) {
-                structure.continuedStructures = StructureFinder().apply { this.registerStructures(While::class) }
+                structure.continuedStructures = structureFinder
                     .start(tokens.slice(structureRange.first..structureRange.last), structureRange.first)
             }
         } else {
@@ -61,7 +60,7 @@ fun processStructureFinder(finderResult: List<Structure>, tokens: List<Char>) {
                         val continued = property.getter.call(structure) as Continued
                         val structureRange = continued.range
                         if (structureRange != null) {
-                            continued.continuedStructures = StructureFinder().apply { this.registerStructures(While::class) }
+                            continued.continuedStructures = structureFinder
                                 .start(tokens.slice(structureRange.first..structureRange.last), structureRange.first)
                         }
                     }
