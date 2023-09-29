@@ -18,6 +18,24 @@ val insideParentheses = CustomExpression() { tokens, startIndex ->
     return@CustomExpression -1
 }
 
+fun insideOfParentheses(parenthesesStart: Char, parenthesesEnd: Char): CustomExpression {
+    return CustomExpression() { tokens, startIndex ->
+        var numberOfLefts = 1
+        for (tokenIndex in startIndex..tokens.lastIndex) {
+            if (tokens[tokenIndex] == parenthesesStart) {
+                numberOfLefts += 1
+            }
+            if (tokens[tokenIndex] == parenthesesEnd) {
+                numberOfLefts -= 1
+            }
+            if (numberOfLefts == 0) {
+                return@CustomExpression tokenIndex
+            }
+        }
+        return@CustomExpression -1
+    }
+}
+
 fun insideParentheses(expression: Expression): Expression {
     return combineExpressions(insideParentheses, expression)
 }

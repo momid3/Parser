@@ -9,7 +9,17 @@ import kotlin.reflect.full.memberProperties
 
 abstract class Structure(val template: Template = Template(), var range: IntRange? = IntRange.EMPTY)
 
+open class Continued(val continueWithExpression: Expression? = null, var continuedStructures: List<Structure> = emptyList()): Structure()
+
 fun <T: Structure> evaluateTemplate(structure: T, template: Template, name: String? = null): Expression {
+
+    if (structure is Continued) {
+        if (name != null) {
+            return structure.continueWithExpression!!.withName(name)
+        } else {
+            return structure.continueWithExpression!!
+        }
+    }
 
     val clazz = structure::class
 
@@ -56,8 +66,12 @@ fun <T: Structure> evaluateStructure(structure: T, expressionResult: SomeExpress
                     if (it.getExpression().name == property.name) {
                         val structureClass = property.returnType.classifier as KClass<*>
                         val structureInstance = structureClass.createInstance()
-                        val structureResult = evaluateStructure(structureInstance as Structure, it)
-                        property.setter.call(instance, structureResult)
+                        if (instance is Continued) {
+//                            property.setter.call(instance, Continued(instance.continueWithExpression, emptyList()))
+                        } else {
+                            val structureResult = evaluateStructure(structureInstance as Structure, it)
+                            property.setter.call(instance, structureResult)
+                        }
                     }
                 }
             }

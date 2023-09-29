@@ -1,6 +1,7 @@
 package com.momid.parser
 
 import com.momid.parser.expression.condition
+import com.momid.parser.expression.insideOfParentheses
 import com.momid.parser.expression.insideParentheses
 import com.momid.parser.expression.some
 import com.momid.parser.structure.*
@@ -15,12 +16,15 @@ class Exp : Structure(
     insideParentheses(some(condition { it != '3' }))
 )
 
-class CodeBlock : Structure(
-    some(condition { it != '{' && it != '}' })
+class CodeBlock : Continued(
+    insideOfParentheses('{', '}')
 )
 
 val whileText = ("while (some() && true) {" +
-        "weAreInsidewhile()" +
+        "while (someOther() && true) {" +
+        "weAreInsideAnotherWhile()" +
+        "}" +
+        "weAreInsideWhile()" +
         "}").toList()
 
 fun main() {
@@ -28,11 +32,12 @@ fun main() {
     val finder = StructureFinder()
     finder.registerStructures(While::class)
 
-    val structures = finder.start(whileText)
+    val structures = finder.start(whileText, 0)
 
     structures.forEach {
         if (it is While) {
-            println(it.expression!!.correspondingTokens(whileText).joinToString(""))
+            println(it.codeBlock!!.correspondingTokens(whileText).joinToString(""))
+            println(it.codeBlock!!.continuedStructures[0].correspondingTokens(whileText).joinToString(""))
         }
     }
 }

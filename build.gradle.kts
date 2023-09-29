@@ -18,6 +18,19 @@ dependencies {
     implementation(kotlin("reflect"))
 }
 
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+        }
+    }
+    repositories {
+        maven {
+            url = uri("$buildDir/repo")
+        }
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
 }

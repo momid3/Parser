@@ -1,6 +1,10 @@
 package com.momid.parser.structure
 
+import com.momid.parser.While
 import kotlin.reflect.KClass
+import kotlin.reflect.KMutableProperty
+import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.full.memberProperties
 
 class StructureFinder {
 
@@ -10,7 +14,7 @@ class StructureFinder {
         registeredClasses.addAll(structures)
     }
 
-    fun start(tokens: List<Char>): List<Structure> {
+    fun start(tokens: List<Char>, sliceShift: Int = 0): List<Structure> {
         var currentTokenIndex = 0
         val foundStructures = ArrayList<Structure>()
         while (true) { whi@
@@ -18,9 +22,13 @@ class StructureFinder {
                 val structure = evaluateStructure(registeredClass as KClass<Structure>, currentTokenIndex, tokens)
                 val structureRange = structure.range
                 if (structureRange != null) {
+                    structure.range = structure.range!!.shift(sliceShift)
                     if (currentTokenIndex > tokens.lastIndex) {
                         continue
                     } else {
+//                        if (structure is Continued) {
+//                            structure.continuedStructures = StructureFinder().apply { this.registerStructures(CodeBlock::class) }.start(tokens.slice(structureRange.first..structureRange.last))
+//                        }
                         val nextTokenIndex = structureRange.last
                         foundStructures.add(structure)
                         currentTokenIndex = nextTokenIndex
@@ -32,11 +40,42 @@ class StructureFinder {
             break
         }
 
+        processStructureFinder(foundStructures, tokens)
+
         return foundStructures
+    }
+}
+
+fun processStructureFinder(finderResult: List<Structure>, tokens: List<Char>) {
+    finderResult.forEach { structure ->
+        if (structure is Continued) {
+            val structureRange = structure.range
+            if (structureRange != null) {
+                structure.continuedStructures = StructureFinder().apply { this.registerStructures(While::class) }
+                    .start(tokens.slice(structureRange.first..structureRange.last), structureRange.first)
+            }
+        } else {
+            structure::class.memberProperties.forEach { property ->
+                if (property is KMutableProperty<*>) {
+                    if ((property.returnType.classifier as KClass<*>).isSubclassOf(Continued::class)) {
+                        val continued = property.getter.call(structure) as Continued
+                        val structureRange = continued.range
+                        if (structureRange != null) {
+                            continued.continuedStructures = StructureFinder().apply { this.registerStructures(While::class) }
+                                .start(tokens.slice(structureRange.first..structureRange.last), structureRange.first)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
 fun Structure.correspondingTokens(tokens: List<Char>): List<Char> {
     val range = this.range!!
     return tokens.slice(range.first until range.last)
+}
+
+fun IntRange.shift(shiftBy: Int): IntRange {
+    return IntRange(this.first + shiftBy, this.last + shiftBy)
 }
