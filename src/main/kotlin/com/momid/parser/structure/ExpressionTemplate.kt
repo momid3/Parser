@@ -23,7 +23,15 @@ fun Template.getExpressionTemplates(): ExpressionTemplates {
     }
 }
 
-fun Template.toExpressionTemplateIfExpression(): Template {
+fun Template.toExpression(): Expression? {
+    if (this is Expression) {
+        return this
+    } else {
+        return null
+    }
+}
+
+private fun Template.toExpressionTemplateIfExpression(): Template {
     if (this is Expression) {
         return ExpressionTemplate(templateExpression = this)
     } else {
