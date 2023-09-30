@@ -9,7 +9,7 @@ import kotlin.reflect.full.memberProperties
 
 abstract class Structure(val template: Template = Template(), var range: IntRange? = IntRange.EMPTY)
 
-open class Continued(val continueWithExpression: Expression? = null, var continuedStructures: List<Structure> = emptyList()): Structure()
+open class Continued(val continueWithExpression: Expression? = null, var continuedStructures: List<Structure> = emptyList(), val continueCondition: ((KClass<Structure>) -> Boolean)? = null, val classesToRegister: List<KClass<*>> = emptyList()): Structure()
 
 fun <T: Structure> evaluateTemplate(structure: T, template: Template, name: String? = null): Expression {
 

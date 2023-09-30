@@ -7,7 +7,7 @@ import kotlin.reflect.full.memberProperties
 
 class StructureFinder {
 
-    private val registeredClasses : ArrayList<KClass<*>> = ArrayList()
+    val registeredClasses : ArrayList<KClass<*>> = ArrayList()
 
     fun registerStructures(vararg structures: KClass<*>) {
         registeredClasses.addAll(structures)
@@ -53,8 +53,13 @@ fun processStructureFinder(structureFinder: StructureFinder, finderResult: List<
         if (structure is Continued) {
             val structureRange = structure.range
             if (structureRange != null) {
-                structure.continuedStructures = structureFinder
-                    .start(tokens.slice(structureRange.first..structureRange.last), structureRange.first)
+                structure.continuedStructures = structureFinder.apply {
+                    val continueCondition = structure.continueCondition
+                    if (continueCondition != null) {
+                        this.registeredClasses.filter { continueCondition(it as KClass<Structure>) }
+                    }
+                    this.registeredClasses.addAll(structure.classesToRegister)
+                }.start(tokens.slice(structureRange.first until structureRange.last), structureRange.first)
             }
         } else {
             structure::class.memberProperties.forEach { property ->
@@ -63,8 +68,13 @@ fun processStructureFinder(structureFinder: StructureFinder, finderResult: List<
                         val continued = property.getter.call(structure) as Continued
                         val structureRange = continued.range
                         if (structureRange != null) {
-                            continued.continuedStructures = structureFinder
-                                .start(tokens.slice(structureRange.first..structureRange.last), structureRange.first)
+                            continued.continuedStructures = structureFinder.apply {
+                                val continueCondition = continued.continueCondition
+                                if (continueCondition != null) {
+                                    this.registeredClasses.filter { continueCondition(it as KClass<Structure>) }
+                                }
+                                this.registeredClasses.addAll(continued.classesToRegister)
+                            }.start(tokens.slice(structureRange.first until structureRange.last), structureRange.first)
                         }
                     }
                 }
