@@ -14,12 +14,12 @@ operator fun Expression.get(name: String): Expression {
     return this.withName(name)
 }
 
-operator fun ExpressionResult.get(name: String): SomeExpressionResult? {
-    return this.find { it.getExpression().name == name }
+operator fun MultiExpressionResult.get(name: String): ExpressionResult? {
+    return this.find { it.expression.name == name }
 }
 
-fun ExpressionResult.getForName(name: String): IntRange? {
-    return this.find { it.getExpression().name == name }?.getRange()
+fun MultiExpressionResult.getForName(name: String): IntRange? {
+    return this.find { it.expression.name == name }?.range
 }
 
 operator fun Expression.plus(expression: Expression): MultiExpression {
@@ -123,8 +123,8 @@ fun main() {
     val expression = side["side before"] + "friend" + side["side after"]
     val matches = match(expression, text.toList())
     matches.forEach {
-        if (it is ExpressionResult) {
-            println(it["side after"]?.getRange())
+        if (it is MultiExpressionResult) {
+            println(it["side after"]?.range)
         }
     }
     matches.forEach {

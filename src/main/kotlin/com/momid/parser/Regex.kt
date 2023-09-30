@@ -2,18 +2,18 @@ package com.momid.parser
 
 import com.momid.parser.expression.*
 
-fun match(expression: Expression, tokens: List<Char>): List<SomeExpressionResult> {
+fun match(expression: Expression, tokens: List<Char>): List<ExpressionResult> {
 
-    val matches = ArrayList<SomeExpressionResult>()
+    val matches = ArrayList<ExpressionResult>()
     var tokenIndex = 0
 
     while (true) {
         val nextMatch = evaluateExpressionValueic(expression, tokenIndex, tokens)
-        if (nextMatch is NoExpressionResult) {
+        if (nextMatch == null) {
             tokenIndex += 1
         } else {
             matches.add(nextMatch)
-            val nextIndex = nextMatch.getRange()!!.last
+            val nextIndex = nextMatch.range.last
             tokenIndex = nextIndex
         }
         if (tokenIndex >= tokens.size) {
@@ -40,12 +40,9 @@ fun main() {
     }
 }
 
-fun printExpressionResult(expressionResult: SomeExpressionResult, indents: Int = 0) {
+fun printExpressionResult(expressionResult: ExpressionResult, indents: Int = 0) {
     when (expressionResult) {
-        is SimpleExpressionResult -> {
-            println(nIndent(3 * indents) + expressionResult.expression.name() + "   " + expressionResult.range)
-        }
-        is ExpressionResult -> {
+        is MultiExpressionResult -> {
             println(expressionResult.mainExpressionResult.expression.name() + "   " + expressionResult.mainExpressionResult.range)
             if (expressionResult.isNotEmpty()) {
                 println(nIndent(3 * (indents + 1)) + "sub expression results of " + expressionResult.mainExpressionResult.expression.name() + " :")
@@ -53,6 +50,9 @@ fun printExpressionResult(expressionResult: SomeExpressionResult, indents: Int =
             expressionResult.forEach {
                 printExpressionResult(it, indents + 1)
             }
+        }
+        else -> {
+            println(nIndent(3 * indents) + expressionResult.expression.name() + "   " + expressionResult.range)
         }
     }
 }
