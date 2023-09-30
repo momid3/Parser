@@ -37,6 +37,13 @@ interface EvaluateExpression {
 }
 
 fun evaluateExpression(expression: Expression, startIndex: Int, tokens: List<Char>): Int {
+    if (startIndex >= tokens.size) {
+        if (expression is RecurringSome0Expression) {
+            return startIndex
+        } else {
+            return -1
+        }
+    }
     when (expression) {
         is ExactExpression -> return evaluateExpression(expression, startIndex, tokens)
         is ConditionExpression -> return evaluateExpression(expression, startIndex, tokens)
@@ -52,6 +59,13 @@ fun evaluateExpression(expression: Expression, startIndex: Int, tokens: List<Cha
 }
 
 fun evaluateExpressionValueic(expression: Expression, startIndex: Int, tokens: List<Char>): SomeExpressionResult {
+    if (startIndex >= tokens.size) {
+        if (expression is RecurringSome0Expression) {
+            return SimpleExpressionResult(expression, startIndex..startIndex)
+        } else {
+            return NoExpressionResult()
+        }
+    }
     when (expression) {
         is MultiExpression -> return evaluateExpressionValueic(expression, startIndex, tokens)
         else -> {
@@ -101,7 +115,7 @@ fun evaluateExpression(multiExpression: MultiExpression, startIndex: Int, tokens
             if (multiExpressionIndex == multiExpression.size) {
                 return endIndex
             }
-            if (endIndex >= tokens.size) {
+            if (endIndex > tokens.size) {
                 break
             }
         }
@@ -138,7 +152,7 @@ fun evaluateExpressionValueic(multiExpression: MultiExpression, startIndex: Int,
                     return ExpressionResult(expressionResults, SimpleExpressionResult(multiExpression, startIndex .. endIndex))
                 }
             }
-            if (endIndex >= tokens.size) {
+            if (endIndex > tokens.size) {
                 break
             }
         }
@@ -181,7 +195,7 @@ fun evaluateExpression(recurringSomeExpression: RecurringSomeExpression, startIn
             break
         } else {
             endIndex = nextIndex
-            if (endIndex < tokens.size) {
+            if (endIndex <= tokens.size) {
                 numberOfRecurring += 1
             } else {
                 break
@@ -204,7 +218,7 @@ fun evaluateExpression(recurringSome0Expression: RecurringSome0Expression, start
             break
         } else {
             endIndex = nextIndex
-            if (endIndex < tokens.size) {
+            if (endIndex <= tokens.size) {
                 numberOfRecurring += 1
             } else {
                 break

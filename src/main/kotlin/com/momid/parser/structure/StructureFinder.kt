@@ -18,13 +18,16 @@ class StructureFinder {
         val foundStructures = ArrayList<Structure>()
         while (true) { whi@
             for (registeredClass in registeredClasses) {
+                if (currentTokenIndex >= tokens.size) {
+                    break@whi
+                }
                 val structure = evaluateStructure(registeredClass as KClass<Structure>, currentTokenIndex, tokens)
                 val structureRange = structure.range
                 if (structureRange != null) {
                     structure.range = structure.range!!.shift(sliceShift)
-                    if (currentTokenIndex > tokens.lastIndex) {
-                        continue
-                    } else {
+//                    if (currentTokenIndex > tokens.lastIndex) {
+//                        continue
+//                    } else {
 //                        if (structure is Continued) {
 //                            structure.continuedStructures = StructureFinder().apply { this.registerStructures(CodeBlock::class) }.start(tokens.slice(structureRange.first..structureRange.last))
 //                        }
@@ -32,7 +35,7 @@ class StructureFinder {
                         foundStructures.add(structure)
                         currentTokenIndex = nextTokenIndex
                         continue@whi
-                    }
+//                    }
                 }
             }
 
