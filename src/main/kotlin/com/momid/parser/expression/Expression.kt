@@ -2,7 +2,7 @@ package com.momid.parser.expression
 
 import com.momid.parser.structure.Template
 
-public open class Expression(var name: String? = null, var isValueic: Boolean = false): Template() {
+public open class Expression(var name: String? = null, var isValueic: Boolean = true): Template() {
 
 }
 
@@ -68,6 +68,9 @@ fun evaluateExpressionValueic(expression: Expression, startIndex: Int, tokens: L
     }
     when (expression) {
         is MultiExpression -> return evaluateExpressionValueic(expression, startIndex, tokens)
+        is EachOfExpression -> return evaluateExpressionValueic(expression, startIndex, tokens)
+        is RecurringSomeExpression -> return evaluateExpressionValueic(expression, startIndex, tokens)
+        is RecurringSome0Expression -> return evaluateExpressionValueic(expression, startIndex, tokens)
         else -> {
             val endIndex = evaluateExpression(expression, startIndex, tokens)
             if (endIndex != -1) {
@@ -123,7 +126,7 @@ fun evaluateExpression(multiExpression: MultiExpression, startIndex: Int, tokens
     return -1
 }
 
-fun evaluateExpressionValueic(multiExpression: MultiExpression, startIndex: Int, tokens: List<Char>): ExpressionResult? {
+fun evaluateExpressionValueic(multiExpression: MultiExpression, startIndex: Int, tokens: List<Char>): MultiExpressionResult? {
     val expressionResults = ArrayList<ExpressionResult>()
     var multiExpressionIndex = 0
     var endIndex = startIndex
@@ -143,7 +146,8 @@ fun evaluateExpressionValueic(multiExpression: MultiExpression, startIndex: Int,
             multiExpressionIndex += 1
             if (multiExpressionIndex == multiExpression.size) {
                 if (expressionResults.isEmpty()) {
-                    return ExpressionResult(multiExpression, startIndex .. endIndex)
+                    throw(Throwable("multiExpression subs should not be empty"))
+//                    return ExpressionResult(multiExpression, startIndex .. endIndex)
                 } else {
                     return MultiExpressionResult(ExpressionResult(multiExpression, startIndex .. endIndex), expressionResults)
                 }
@@ -173,11 +177,14 @@ fun evaluateExpression(eachOfExpression: EachOfExpression, startIndex: Int, toke
     return -1
 }
 
-fun evaluateExpressionValueic(eachOfExpression: EachOfExpression, startIndex: Int, tokens: List<Char>): EachOfExpressionResult? {
+fun evaluateExpressionValueic(eachOfExpression: EachOfExpression, startIndex: Int, tokens: List<Char>): ExpressionResult? {
     eachOfExpression.forEach {
-        val endIndex = evaluateExpression(it, startIndex, tokens)
-        if (endIndex != -1) {
-            return EachOfExpressionResult(ExpressionResult(eachOfExpression, startIndex..endIndex), it)
+        val expressionResult = evaluateExpressionValueic(it, startIndex, tokens)
+        if (expressionResult != null) {
+            val endIndex = expressionResult.range.last
+            if (endIndex != -1) {
+                return expressionResult
+            }
         }
     }
     return null
@@ -215,6 +222,27 @@ fun evaluateExpression(recurringSomeExpression: RecurringSomeExpression, startIn
     }
 }
 
+fun evaluateExpressionValueic(recurringSomeExpression: RecurringSomeExpression, startIndex: Int, tokens: List<Char>): ExpressionResult? {
+    val expressionResults = ArrayList<ExpressionResult>()
+    var numberOfRecurring = 0
+    var endIndex = startIndex
+    while (true) {
+        val expressionResult = evaluateExpressionValueic(recurringSomeExpression.expression, endIndex, tokens) ?: break
+        endIndex = expressionResult.range.last
+        if (endIndex <= tokens.size) {
+            numberOfRecurring += 1
+            expressionResults.add(expressionResult)
+        } else {
+            break
+        }
+    }
+    if (numberOfRecurring > 0) {
+        return MultiExpressionResult(ExpressionResult(recurringSomeExpression, startIndex..endIndex), expressionResults)
+    } else {
+        return null
+    }
+}
+
 fun evaluateExpression(recurringSome0Expression: RecurringSome0Expression, startIndex: Int, tokens: List<Char>): Int {
     var numberOfRecurring = 0
     var endIndex = startIndex
@@ -232,6 +260,23 @@ fun evaluateExpression(recurringSome0Expression: RecurringSome0Expression, start
         }
     }
     return endIndex
+}
+
+fun evaluateExpressionValueic(recurringSome0Expression: RecurringSome0Expression, startIndex: Int, tokens: List<Char>): ExpressionResult {
+    val expressionResults = ArrayList<ExpressionResult>()
+    var numberOfRecurring = 0
+    var endIndex = startIndex
+    while (true) {
+        val expressionResult = evaluateExpressionValueic(recurringSome0Expression.expression, endIndex, tokens) ?: break
+        endIndex = expressionResult.range.last
+        if (endIndex <= tokens.size) {
+            numberOfRecurring += 1
+            expressionResults.add(expressionResult)
+        } else {
+            break
+        }
+    }
+    return MultiExpressionResult(ExpressionResult(recurringSome0Expression, startIndex..endIndex), expressionResults)
 }
 
 fun evaluateExpression(customExpression: CustomExpression, startIndex: Int, tokens: List<Char>): Int {

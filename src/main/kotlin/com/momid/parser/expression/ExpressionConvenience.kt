@@ -14,8 +14,15 @@ operator fun Expression.get(name: String): Expression {
     return this.withName(name)
 }
 
-operator fun MultiExpressionResult.get(name: String): ExpressionResult? {
-    return this.find { it.expression.name == name }
+operator fun MultiExpressionResult.get(name: String): ExpressionResult {
+    return this.find { it.expression.name == name } ?: throw(Throwable("there is no sub expressionresult with this name"))
+}
+
+operator fun ExpressionResult.get(name: String): ExpressionResult {
+    when (this) {
+        is MultiExpressionResult -> return this[name]
+        else -> throw(Throwable("this expressionresult kind does not have sub expressionresults"))
+    }
 }
 
 fun MultiExpressionResult.getForName(name: String): IntRange? {

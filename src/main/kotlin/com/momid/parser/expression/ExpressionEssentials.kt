@@ -18,6 +18,17 @@ val insideParentheses = CustomExpression() { tokens, startIndex ->
     return@CustomExpression -1
 }
 
+fun spaced(expressions: () -> MultiExpression): MultiExpression {
+    val spacedExpressions = MultiExpression(arrayListOf())
+    val expressions = expressions()
+    for (expressionIndex in 0..expressions.lastIndex - 1) {
+        spacedExpressions.expressions.add(expressions[expressionIndex])
+        spacedExpressions.expressions.add(spaces)
+    }
+    spacedExpressions.expressions.add(expressions[expressions.lastIndex])
+    return spacedExpressions
+}
+
 fun insideOfParentheses(parenthesesStart: Char, parenthesesEnd: Char): CustomExpression {
     return CustomExpression() { tokens, startIndex ->
         var numberOfLefts = 1
