@@ -14,12 +14,19 @@ operator fun Expression.get(name: String): Expression {
     return this.withName(name)
 }
 
-operator fun ExpressionResult.get(name: String): SomeExpressionResult? {
-    return this.find { it.getExpression().name == name }
+operator fun MultiExpressionResult.get(name: String): ExpressionResult {
+    return this.find { it.expression.name == name } ?: throw(Throwable("there is no sub expressionresult with this name"))
 }
 
-fun ExpressionResult.getForName(name: String): IntRange? {
-    return this.find { it.getExpression().name == name }?.getRange()
+operator fun ExpressionResult.get(name: String): ExpressionResult {
+    when (this) {
+        is MultiExpressionResult -> return this[name]
+        else -> throw(Throwable("this expressionresult kind does not have sub expressionresults"))
+    }
+}
+
+fun MultiExpressionResult.getForName(name: String): IntRange? {
+    return this.find { it.expression.name == name }?.range
 }
 
 operator fun Expression.plus(expression: Expression): MultiExpression {
@@ -123,8 +130,8 @@ fun main() {
     val expression = side["side before"] + "friend" + side["side after"]
     val matches = match(expression, text.toList())
     matches.forEach {
-        if (it is ExpressionResult) {
-            println(it["side after"]?.getRange())
+        if (it is MultiExpressionResult) {
+            println(it["side after"]?.range)
         }
     }
     matches.forEach {

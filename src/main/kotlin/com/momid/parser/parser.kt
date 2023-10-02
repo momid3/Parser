@@ -2,7 +2,6 @@ package com.momid.parser
 
 import com.momid.parser.expression.*
 import com.momid.parser.structure.*
-import kotlin.reflect.full.isSubclassOf
 
 class VariableName: Structure(
     condition { it.isLetter() } + some0(condition { it.isLetterOrDigit() })
@@ -47,8 +46,6 @@ class SimpleExpressionInParentheses(var inside: ExpressionInParentheses? = null)
 
 class ComplexExpression: Continued(
     some(anyOf(!SimpleExpression(), !SimpleExpressionInParentheses())),
-    continueCondition = { !it.isSubclassOf(ComplexExpression::class) },
-    classesToRegister = listOf(SimpleExpression::class, SimpleExpressionInParentheses::class)
 )
 
 class ExpressionInParentheses: Continued(

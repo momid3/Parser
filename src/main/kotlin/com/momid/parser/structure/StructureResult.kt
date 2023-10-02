@@ -7,7 +7,7 @@ import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.memberProperties
 
-abstract class Structure(val template: Template = Template(), var range: IntRange? = IntRange.EMPTY)
+abstract class Structure(val template: Template = Template(), var range: IntRange = IntRange.EMPTY)
 
 open class Continued(val continueWithExpression: Expression? = null, var continuedStructures: List<Structure> = emptyList(), val continueCondition: ((KClass<Structure>) -> Boolean)? = null, val classesToRegister: List<KClass<*>> = emptyList()): Structure()
 
@@ -55,15 +55,15 @@ fun <T: Structure> evaluateTemplate(structure: T, template: Template, name: Stri
     throw(Throwable("unknown template kind"))
 }
 
-fun <T: Structure> evaluateStructure(structure: T, expressionResult: SomeExpressionResult): T {
+fun <T: Structure> evaluateStructure(structure: T, expressionResult: ExpressionResult): T {
 
     val clazz = structure::class
     val instance = clazz.createInstance()
     clazz.declaredMemberProperties.forEach { property ->
         if (property is KMutableProperty<*>) {
-            if (expressionResult is ExpressionResult) {
+            if (expressionResult is MultiExpressionResult) {
                 expressionResult.forEach {
-                    if (it.getExpression().name == property.name) {
+                    if (it.expression.name == property.name) {
                         val structureClass = property.returnType.classifier as KClass<*>
                         val structureInstance = structureClass.createInstance()
                         if (instance is Continued) {
@@ -77,22 +77,30 @@ fun <T: Structure> evaluateStructure(structure: T, expressionResult: SomeExpress
             }
         }
     }
-    instance.range = expressionResult.getRange()
+    instance.range = expressionResult.range
     return instance
 }
 
-inline fun <reified T : Structure> evaluateStructure(startIndex: Int, tokens: List<Char>): T {
+inline fun <reified T : Structure> evaluateStructure(startIndex: Int, tokens: List<Char>): T? {
     val instance = T::class.createInstance()
     val template = T::class.memberProperties.find { it.name == "template" } ?: throw(Throwable("the getExpression function of the structure was not found"))
     val expressionResult = evaluateExpressionValueic(evaluateTemplate(instance, (template.get(instance) as Template).toExpressionTemplateIfExpression()), startIndex, tokens)
-    return evaluateStructure(instance, expressionResult)
+    if (expressionResult != null) {
+        return evaluateStructure(instance, expressionResult)
+    } else {
+        return null
+    }
 }
 
-fun <T : Structure> evaluateStructure(structure: KClass<T>, startIndex: Int, tokens: List<Char>): T {
+fun <T : Structure> evaluateStructure(structure: KClass<T>, startIndex: Int, tokens: List<Char>): T? {
     val instance = structure.createInstance()
     val template = structure.memberProperties.find { it.name == "template" } ?: throw(Throwable("the getExpression function of the structure was not found"))
     val expressionResult = evaluateExpressionValueic(evaluateTemplate(instance, (template.get(instance) as Template).toExpressionTemplateIfExpression()), startIndex, tokens)
-    return evaluateStructure(instance, expressionResult)
+    if (expressionResult != null) {
+        return evaluateStructure(instance, expressionResult)
+    } else {
+        return null
+    }
 }
 
 class SomeStructure(var hello: String? = null)
@@ -121,5 +129,5 @@ fun main() {
     val text = "hello! my friend. how are you today ?"
 
     val structureResult = evaluateStructure<AnStructure>(7, text.toList())
-    println("range of side: " + structureResult.sideAfter?.range)
+    println("range of side: " + structureResult?.sideAfter?.range)
 }

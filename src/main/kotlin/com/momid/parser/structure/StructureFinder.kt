@@ -7,7 +7,7 @@ import kotlin.reflect.full.memberProperties
 
 class StructureFinder {
 
-    val registeredClasses : ArrayList<KClass<*>> = ArrayList()
+    private val registeredClasses : ArrayList<KClass<*>> = ArrayList()
 
     fun registerStructures(vararg structures: KClass<*>) {
         registeredClasses.addAll(structures)
@@ -21,22 +21,20 @@ class StructureFinder {
                 if (currentTokenIndex >= tokens.size) {
                     break@whi
                 }
-                val structure = evaluateStructure(registeredClass as KClass<Structure>, currentTokenIndex, tokens)
+                val structure = evaluateStructure(registeredClass as KClass<Structure>, currentTokenIndex, tokens) ?: continue
                 val structureRange = structure.range
-                if (structureRange != null) {
-                    structure.range = structure.range!!.shift(sliceShift)
+                structure.range = structure.range.shift(sliceShift)
 //                    if (currentTokenIndex > tokens.lastIndex) {
 //                        continue
 //                    } else {
 //                        if (structure is Continued) {
 //                            structure.continuedStructures = StructureFinder().apply { this.registerStructures(CodeBlock::class) }.start(tokens.slice(structureRange.first..structureRange.last))
 //                        }
-                        val nextTokenIndex = structureRange.last
-                        foundStructures.add(structure)
-                        currentTokenIndex = nextTokenIndex
-                        continue@whi
+                val nextTokenIndex = structureRange.last
+                foundStructures.add(structure)
+                currentTokenIndex = nextTokenIndex
+                continue@whi
 //                    }
-                }
             }
 
             break
@@ -52,30 +50,16 @@ fun processStructureFinder(structureFinder: StructureFinder, finderResult: List<
     finderResult.forEach { structure ->
         if (structure is Continued) {
             val structureRange = structure.range
-            if (structureRange != null) {
-                structure.continuedStructures = structureFinder.apply {
-                    val continueCondition = structure.continueCondition
-                    if (continueCondition != null) {
-                        this.registeredClasses.filter { continueCondition(it as KClass<Structure>) }
-                    }
-                    this.registeredClasses.addAll(structure.classesToRegister)
-                }.start(tokens.slice(structureRange.first until structureRange.last), structureRange.first)
-            }
+            structure.continuedStructures = structureFinder
+                .start(tokens.slice(structureRange.first..structureRange.last), structureRange.first)
         } else {
             structure::class.memberProperties.forEach { property ->
                 if (property is KMutableProperty<*>) {
                     if ((property.returnType.classifier as KClass<*>).isSubclassOf(Continued::class)) {
                         val continued = property.getter.call(structure) as Continued
                         val structureRange = continued.range
-                        if (structureRange != null) {
-                            continued.continuedStructures = structureFinder.apply {
-                                val continueCondition = continued.continueCondition
-                                if (continueCondition != null) {
-                                    this.registeredClasses.filter { continueCondition(it as KClass<Structure>) }
-                                }
-                                this.registeredClasses.addAll(continued.classesToRegister)
-                            }.start(tokens.slice(structureRange.first until structureRange.last), structureRange.first)
-                        }
+                        continued.continuedStructures = structureFinder
+                            .start(tokens.slice(structureRange.first..structureRange.last), structureRange.first)
                     }
                 }
             }
@@ -84,7 +68,7 @@ fun processStructureFinder(structureFinder: StructureFinder, finderResult: List<
 }
 
 fun Structure.correspondingTokens(tokens: List<Char>): List<Char> {
-    val range = this.range!!
+    val range = this.range
     return tokens.slice(range.first until range.last)
 }
 
