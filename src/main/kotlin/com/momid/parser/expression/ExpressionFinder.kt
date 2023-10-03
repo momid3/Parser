@@ -2,7 +2,7 @@ package com.momid.parser.expression
 
 class ExpressionFinder {
 
-    private val registeredExpressions = ArrayList<Expression>()
+    var registeredExpressions = ArrayList<Expression>()
 
     fun registerExpressions(expressions: List<Expression>) {
         registeredExpressions.addAll(expressions)

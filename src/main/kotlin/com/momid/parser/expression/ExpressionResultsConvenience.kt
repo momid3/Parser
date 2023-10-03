@@ -26,4 +26,16 @@ class ExpressionResultsHandlerContext(
     fun continueWith(expressionResult: ExpressionResult, anotherHandler: ExpressionResultsHandlerContext.() -> Unit = handle) {
         ExpressionResultsHandlerContext(expressionFinder, expressionFinder.start(tokens, expressionResult.range), tokens, anotherHandler).anotherHandler()
     }
+
+    fun continueWith(expressionResult: ExpressionResult, vararg registerExpressions: Expression, anotherHandler: ExpressionResultsHandlerContext.() -> Unit = handle) {
+        ExpressionResultsHandlerContext(expressionFinder, ExpressionFinder().apply { registerExpressions(registerExpressions.toList()) }.start(tokens, expressionResult.range), tokens, anotherHandler).anotherHandler()
+    }
+
+    fun print(expressionResult: ExpressionResult) {
+        println(expressionResult.correspondingTokensText(tokens))
+    }
+
+    fun print(prefix: String, expressionResult: ExpressionResult) {
+        println(prefix + " " + expressionResult.correspondingTokensText(tokens))
+    }
 }
