@@ -24,6 +24,8 @@ class EachOfExpression(private val expressions: List<Expression>): Expression(),
 
 class EachOfTokensExpression(private val tokens: List<Char>): Expression(), List<Char> by tokens
 
+class NotExpression(val expression: Expression): Expression()
+
 class CustomExpression(val condition: (tokens: List<Char>, startIndex: Int) -> Int): Expression()
 
 interface Condition {
@@ -53,6 +55,7 @@ fun evaluateExpression(expression: Expression, startIndex: Int, tokens: List<Cha
         is RecurringSome0Expression -> return evaluateExpression(expression, startIndex, tokens)
         is EachOfExpression -> return evaluateExpression(expression, startIndex, tokens)
         is EachOfTokensExpression -> return evaluateExpression(expression, startIndex, tokens)
+        is NotExpression -> return evaluateExpression(expression, startIndex, tokens)
         is CustomExpression -> return evaluateExpression(expression, startIndex, tokens)
         else -> throw(Throwable("unknown expression kind"))
     }
@@ -277,6 +280,15 @@ fun evaluateExpressionValueic(recurringSome0Expression: RecurringSome0Expression
         }
     }
     return MultiExpressionResult(ExpressionResult(recurringSome0Expression, startIndex..endIndex), expressionResults)
+}
+
+fun evaluateExpression(notExpression: NotExpression, startIndex: Int, tokens: List<Char>): Int {
+    val endIndex = evaluateExpression(notExpression.expression, startIndex, tokens)
+    if (endIndex == -1) {
+        return startIndex
+    } else {
+        return -1
+    }
 }
 
 fun evaluateExpression(customExpression: CustomExpression, startIndex: Int, tokens: List<Char>): Int {

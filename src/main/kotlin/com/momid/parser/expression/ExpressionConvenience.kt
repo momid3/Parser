@@ -46,6 +46,15 @@ fun <T : Expression> ExpressionResult.isOfForEach(expression: T, block: (Express
     }
 }
 
+fun not(expression: Expression): NotExpression {
+    return NotExpression(expression)
+}
+
+@JvmName("not1")
+operator fun Expression.not(): NotExpression {
+    return not(this)
+}
+
 fun MultiExpressionResult.getForName(name: String): IntRange? {
     return this.find { it.expression.name == name }?.range
 }
