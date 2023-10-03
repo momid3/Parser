@@ -4,7 +4,7 @@ open class SomeExpressionResult(val expressionResult: ExpressionResult?)
 
 open class ExpressionResult(val expression: Expression, val range: IntRange)
 
-class MultiExpressionResult(val mainExpressionResult: ExpressionResult, private val expressionResults: List<ExpressionResult> = emptyList()): List<ExpressionResult> by expressionResults, ExpressionResult(mainExpressionResult.expression, mainExpressionResult.range)
+class MultiExpressionResult(val mainExpressionResult: ExpressionResult, val expressionResults: ArrayList<ExpressionResult> = arrayListOf()): List<ExpressionResult> by expressionResults, ExpressionResult(mainExpressionResult.expression, mainExpressionResult.range)
 
 class EachOfExpressionResult(val mainExpressionResult: ExpressionResult, val whichExpression: Expression): ExpressionResult(mainExpressionResult.expression, mainExpressionResult.range)
 

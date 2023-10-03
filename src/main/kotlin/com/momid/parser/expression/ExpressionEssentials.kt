@@ -18,6 +18,23 @@ val insideParentheses = CustomExpression() { tokens, startIndex ->
     return@CustomExpression -1
 }
 
+fun inline(multiExpression: MultiExpression): CustomExpressionValueic {
+    return CustomExpressionValueic() { tokens, startIndex ->
+        val inlinedExpressionResults = ArrayList<ExpressionResult>()
+        val expressionResult = evaluateExpressionValueic(multiExpression, startIndex, tokens) ?: return@CustomExpressionValueic null
+        expressionResult.forEach {
+            if (it is MultiExpressionResult) {
+                inlinedExpressionResults.addAll(it)
+            } else {
+                inlinedExpressionResults.add(it)
+            }
+        }
+        expressionResult.expressionResults.clear()
+        expressionResult.expressionResults.addAll(inlinedExpressionResults)
+        return@CustomExpressionValueic expressionResult
+    }
+}
+
 fun spaced(expressions: () -> MultiExpression): MultiExpression {
     val spacedExpressions = MultiExpression(arrayListOf())
     val expressions = expressions()

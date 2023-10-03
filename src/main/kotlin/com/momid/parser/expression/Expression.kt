@@ -6,7 +6,7 @@ public open class Expression(var name: String? = null, var isValueic: Boolean = 
 
 }
 
-class ExactExpression(val value: String) : Expression() {
+class ExactExpression(val value: String) : Expression(isValueic = false) {
 
 }
 
@@ -27,6 +27,8 @@ class EachOfTokensExpression(private val tokens: List<Char>): Expression(), List
 class NotExpression(val expression: Expression): Expression()
 
 class CustomExpression(val condition: (tokens: List<Char>, startIndex: Int) -> Int): Expression()
+
+class CustomExpressionValueic(val condition: (tokens: List<Char>, startIndex: Int) -> ExpressionResult?): Expression()
 
 interface Condition {
 
@@ -74,6 +76,7 @@ fun evaluateExpressionValueic(expression: Expression, startIndex: Int, tokens: L
         is EachOfExpression -> return evaluateExpressionValueic(expression, startIndex, tokens)
         is RecurringSomeExpression -> return evaluateExpressionValueic(expression, startIndex, tokens)
         is RecurringSome0Expression -> return evaluateExpressionValueic(expression, startIndex, tokens)
+        is CustomExpressionValueic -> return evaluateExpressionValueic(expression, startIndex, tokens)
         else -> {
             val endIndex = evaluateExpression(expression, startIndex, tokens)
             if (endIndex != -1) {
@@ -294,6 +297,11 @@ fun evaluateExpression(notExpression: NotExpression, startIndex: Int, tokens: Li
 fun evaluateExpression(customExpression: CustomExpression, startIndex: Int, tokens: List<Char>): Int {
     val endIndex = customExpression.condition(tokens, startIndex)
     return endIndex
+}
+
+fun evaluateExpressionValueic(customExpression: CustomExpressionValueic, startIndex: Int, tokens: List<Char>): ExpressionResult? {
+    val expressionResult = customExpression.condition(tokens, startIndex)
+    return expressionResult
 }
 
 
