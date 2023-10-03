@@ -8,12 +8,13 @@ class ExpressionFinder {
         registeredExpressions.addAll(expressions)
     }
 
-    fun start(tokens: List<Char>): List<ExpressionResult> {
+    fun start(tokens: List<Char>, findingRange: IntRange? = null): List<ExpressionResult> {
         val foundExpressions = ArrayList<ExpressionResult>()
-        var currentTokenIndex = 0
+        var currentTokenIndex = findingRange?.start ?: 0
+        val maxTokenIndex = findingRange?.last ?: tokens.size
         while (true) { whi@
             for (expression in registeredExpressions) {
-                if (currentTokenIndex >= tokens.size) {
+                if (currentTokenIndex >= maxTokenIndex) {
                     break@whi
                 }
                 val expressionResult = evaluateExpressionValueic(expression, currentTokenIndex, tokens) ?: continue

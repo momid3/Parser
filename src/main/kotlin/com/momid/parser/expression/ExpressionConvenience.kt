@@ -25,6 +25,27 @@ operator fun ExpressionResult.get(name: String): ExpressionResult {
     }
 }
 
+fun <T : Expression> ExpressionResult.isOf(expression: T, then: (ExpressionResult) -> Unit) {
+    if (this.expression == expression) {
+        then(this)
+    }
+}
+
+fun ExpressionResult.forEach(block: (ExpressionResult) -> Unit) {
+    when (this) {
+        is MultiExpressionResult -> this.forEach { block(it) }
+        else -> throw(Throwable("this expressionresult kind does not have sub expressionresults"))
+    }
+}
+
+fun <T : Expression> ExpressionResult.isOfForEach(expression: T, block: (ExpressionResult) -> Unit) {
+    this.isOf(expression) {
+        it.forEach {
+            block(it)
+        }
+    }
+}
+
 fun MultiExpressionResult.getForName(name: String): IntRange? {
     return this.find { it.expression.name == name }?.range
 }
