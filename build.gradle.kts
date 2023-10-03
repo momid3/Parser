@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.momid"
-version = "0.0.573"
+version = "0.0.733"
 
 repositories {
     mavenCentral()
