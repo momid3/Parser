@@ -148,6 +148,7 @@ fun Expression.clone(): Expression {
         is EachOfExpression -> EachOfExpression(this)
         is EachOfTokensExpression -> EachOfTokensExpression(this)
         is CustomExpression -> CustomExpression(this.condition)
+        is CustomExpressionValueic -> CustomExpressionValueic(this.condition)
         else -> throw (Throwable("unknown expression kind"))
     }
 }
