@@ -31,7 +31,7 @@ fun inline(multiExpression: MultiExpression): CustomExpressionValueic {
         }
         expressionResult.expressionResults.clear()
         expressionResult.expressionResults.addAll(inlinedExpressionResults)
-        return@CustomExpressionValueic expressionResult
+        return@CustomExpressionValueic ContentExpressionResult(ExpressionResult(multiExpression, expressionResult.range), expressionResult)
     }
 }
 

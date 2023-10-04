@@ -6,7 +6,7 @@ open class ExpressionResult(val expression: Expression, val range: IntRange)
 
 class MultiExpressionResult(val mainExpressionResult: ExpressionResult, val expressionResults: ArrayList<ExpressionResult> = arrayListOf()): List<ExpressionResult> by expressionResults, ExpressionResult(mainExpressionResult.expression, mainExpressionResult.range)
 
-class EachOfExpressionResult(val mainExpressionResult: ExpressionResult, val whichExpression: Expression): ExpressionResult(mainExpressionResult.expression, mainExpressionResult.range)
+class ContentExpressionResult(val mainExpressionResult: ExpressionResult, val content: ExpressionResult): ExpressionResult(mainExpressionResult.expression, mainExpressionResult.range)
 
 //fun ExpressionResult.getRange(): IntRange? {
 //    when (this) {

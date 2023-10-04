@@ -17,6 +17,15 @@ fun handleExpressionResult(
     ExpressionResultsHandlerContext(expressionFinder, expressionResult, tokens, handle).handle()
 }
 
+val ExpressionResult.content: ExpressionResult
+    get() {
+        if (this is ContentExpressionResult) {
+            return this.content
+        } else {
+            throw(Throwable("expression is not a content expression"))
+        }
+    }
+
 class ExpressionResultsHandlerContext(
     val expressionFinder: ExpressionFinder,
     val expressionResult: ExpressionResult,

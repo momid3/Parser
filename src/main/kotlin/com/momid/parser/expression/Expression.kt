@@ -183,13 +183,13 @@ fun evaluateExpression(eachOfExpression: EachOfExpression, startIndex: Int, toke
     return -1
 }
 
-fun evaluateExpressionValueic(eachOfExpression: EachOfExpression, startIndex: Int, tokens: List<Char>): ExpressionResult? {
+fun evaluateExpressionValueic(eachOfExpression: EachOfExpression, startIndex: Int, tokens: List<Char>): ContentExpressionResult? {
     eachOfExpression.forEach {
         val expressionResult = evaluateExpressionValueic(it, startIndex, tokens)
         if (expressionResult != null) {
             val endIndex = expressionResult.range.last
             if (endIndex != -1) {
-                return expressionResult
+                return ContentExpressionResult(ExpressionResult(eachOfExpression, expressionResult.range), expressionResult)
             }
         }
     }
