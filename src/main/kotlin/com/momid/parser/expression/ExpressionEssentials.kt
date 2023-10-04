@@ -24,7 +24,7 @@ fun inline(multiExpression: MultiExpression): CustomExpressionValueic {
         val expressionResult = evaluateExpressionValueic(multiExpression, startIndex, tokens) ?: return@CustomExpressionValueic null
         expressionResult.forEach {
             if (it is MultiExpressionResult) {
-                inlinedExpressionResults.addAll(it)
+                inlinedExpressionResults.addAll(it.expressionResults)
             } else {
                 inlinedExpressionResults.add(it)
             }
