@@ -18,10 +18,13 @@ val insideParentheses = CustomExpression() { tokens, startIndex ->
     return@CustomExpression -1
 }
 
-fun inline(multiExpression: MultiExpression): CustomExpressionValueic {
+fun inline(multiExpression: Expression): CustomExpressionValueic {
     return CustomExpressionValueic() { tokens, startIndex ->
         val inlinedExpressionResults = ArrayList<ExpressionResult>()
         val expressionResult = evaluateExpressionValueic(multiExpression, startIndex, tokens) ?: return@CustomExpressionValueic null
+        if (expressionResult !is MultiExpressionResult) {
+            throw(Throwable("expression " + multiExpression::class + "does not evaluate to a MultiExpressionResult"))
+        }
         expressionResult.forEach {
             if (it is MultiExpressionResult) {
                 inlinedExpressionResults.addAll(it.expressionResults)
