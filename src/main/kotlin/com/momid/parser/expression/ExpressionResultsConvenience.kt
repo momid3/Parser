@@ -10,25 +10,29 @@ fun ExpressionResult.correspondingTokensText(tokens: List<Char>): String {
 
 fun handleExpressionResult(
     expressionFinder: ExpressionFinder,
-    expressionResults: List<ExpressionResult>,
+    expressionResult: ExpressionResult,
     tokens: List<Char>,
     handle: ExpressionResultsHandlerContext.() -> Unit
 ) {
-    ExpressionResultsHandlerContext(expressionFinder, expressionResults, tokens, handle).handle()
+    ExpressionResultsHandlerContext(expressionFinder, expressionResult, tokens, handle).handle()
 }
 
 class ExpressionResultsHandlerContext(
     val expressionFinder: ExpressionFinder,
-    val expressionResults: List<ExpressionResult>,
+    val expressionResult: ExpressionResult,
     val tokens: List<Char>,
     val handle: ExpressionResultsHandlerContext.() -> Unit
 ) {
     fun continueWith(expressionResult: ExpressionResult, anotherHandler: ExpressionResultsHandlerContext.() -> Unit = handle) {
-        ExpressionResultsHandlerContext(expressionFinder, expressionFinder.start(tokens, expressionResult.range), tokens, anotherHandler).anotherHandler()
+        expressionFinder.start(tokens, expressionResult.range).forEach {
+            ExpressionResultsHandlerContext(expressionFinder, it, tokens, anotherHandler).anotherHandler()
+        }
     }
 
     fun continueWith(expressionResult: ExpressionResult, vararg registerExpressions: Expression, anotherHandler: ExpressionResultsHandlerContext.() -> Unit = handle) {
-        ExpressionResultsHandlerContext(expressionFinder, ExpressionFinder().apply { registerExpressions(registerExpressions.toList()) }.start(tokens, expressionResult.range), tokens, anotherHandler).anotherHandler()
+        ExpressionFinder().apply { registerExpressions(registerExpressions.toList()) }.start(tokens, expressionResult.range).forEach {
+            ExpressionResultsHandlerContext(expressionFinder, it, tokens, anotherHandler).anotherHandler()
+        }
     }
 
     fun print(expressionResult: ExpressionResult) {
