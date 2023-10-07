@@ -1,5 +1,5 @@
 # Parser
-A general-purpose parser. capable of creating parserss that can parse various data using custom programmatic expressions and structures.
+A general-purpose parser. capable of creating parsers that can parse various data using custom programmatic expressions and structures.
 
 ## How It Works
 *Parser* allows you to define regex-like expressions in a flexible and programmatic manner. You can also define structures needed for parsing as simple classes along with their parameters as other structures.
