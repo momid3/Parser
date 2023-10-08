@@ -2,7 +2,7 @@ package com.momid.parser.expression
 
 val spaces = some0(condition { it.isWhitespace() })
 
-val insideParentheses = CustomExpression() { tokens, startIndex ->
+val insideParentheses = CustomExpression() { tokens, startIndex, endIndex ->
     var numberOfLefts = 1
     for (tokenIndex in startIndex..tokens.lastIndex) {
         if (tokens[tokenIndex] == '(') {
@@ -19,7 +19,7 @@ val insideParentheses = CustomExpression() { tokens, startIndex ->
 }
 
 fun inline(multiExpression: Expression): CustomExpressionValueic {
-    return CustomExpressionValueic() { tokens, startIndex ->
+    return CustomExpressionValueic() { tokens, startIndex, endIndex ->
         val inlinedExpressionResults = ArrayList<ExpressionResult>()
         val expressionResult = evaluateExpressionValueic(multiExpression, startIndex, tokens) ?: return@CustomExpressionValueic null
         if (expressionResult !is MultiExpressionResult) {
@@ -50,7 +50,7 @@ fun spaced(expressions: () -> MultiExpression): MultiExpression {
 }
 
 fun insideOfParentheses(parenthesesStart: Char, parenthesesEnd: Char): CustomExpression {
-    return CustomExpression() { tokens, startIndex ->
+    return CustomExpression() { tokens, startIndex, endIndex ->
         var numberOfLefts = 1
         for (tokenIndex in startIndex..tokens.lastIndex) {
             if (tokens[tokenIndex] == parenthesesStart) {
@@ -76,7 +76,7 @@ fun matchesFully(expression: Expression, tokenSlice: List<Char>): Boolean {
 }
 
 fun combineExpressions(expression: Expression, otherExpression: Expression): Expression {
-    return CustomExpression() { tokens, startIndex ->
+    return CustomExpression() { tokens, startIndex, endIndex ->
         val expressionNextIndex = evaluateExpression(expression, startIndex, tokens)
         if (expressionNextIndex == -1) {
             return@CustomExpression -1
