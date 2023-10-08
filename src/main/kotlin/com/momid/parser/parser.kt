@@ -52,7 +52,7 @@ class ExpressionInParentheses: Continued(
     insideParentheses
 )
 
-val dotInTheMiddleOfNumber = CustomExpression() { tokens, startIndex ->
+val dotInTheMiddleOfNumber = CustomExpression() { tokens, startIndex, endIndex ->
     if (startIndex > 0 && tokens[startIndex - 1].isDigit() && startIndex < tokens.lastIndex && tokens[startIndex + 1].isDigit()) {
         return@CustomExpression startIndex + 1
     } else {
