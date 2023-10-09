@@ -1,7 +1,6 @@
 package com.momid.parser.parser
 
 import com.momid.parser.expression.*
-import com.momid.parser.isOf
 import com.momid.parser.not
 
 val variableName =
@@ -28,27 +27,27 @@ val simpleExpressionInParentheses =
 val complexExpression =
     some(anyOf(simpleExpression, simpleExpressionInParentheses))
 
-private fun handleExpressionResults(expressionFinder: ExpressionFinder, expressionResult: ExpressionResult, tokens: List<Char>) {
-    handleExpressionResult(expressionFinder, expressionResult, tokens) {
-        this.expressionResult.isOf(complexExpression) {
-            println("complex expression: " + it.correspondingTokensText(this.tokens))
-            it.forEach {
-                it.isOf(simpleExpression) {
-                    println("simple: " + it.correspondingTokensText(this.tokens))
-                }
-                it.isOf(simpleExpressionInParentheses) {
-                    println("simple in parentheses: " + it.correspondingTokensText(this.tokens))
-//                       handleExpressionResults(
-//                           expressionFinder,
-//                           expressionFinder.start(tokens, it["insideParentheses"].range),
-//                           tokens
-//                       )
-                    continueWith(it["insideParentheses"])
-                }
-            }
-        }
-    }
-}
+//private fun handleExpressionResults(expressionFinder: ExpressionFinder, expressionResult: ExpressionResult, tokens: List<Char>) {
+//    handleExpressionResult(expressionFinder, expressionResult, tokens) {
+//        this.expressionResult.isOf(complexExpression) {
+//            println("complex expression: " + it.correspondingTokensText(this.tokens))
+//            it.forEach {
+//                it.isOf(simpleExpression) {
+//                    println("simple: " + it.correspondingTokensText(this.tokens))
+//                }
+//                it.isOf(simpleExpressionInParentheses) {
+//                    println("simple in parentheses: " + it.correspondingTokensText(this.tokens))
+////                       handleExpressionResults(
+////                           expressionFinder,
+////                           expressionFinder.start(tokens, it["insideParentheses"].range),
+////                           tokens
+////                       )
+//                    continueWith(it["insideParentheses"])
+//                }
+//            }
+//        }
+//    }
+//}
 
 fun main() {
 
@@ -56,7 +55,7 @@ fun main() {
     val finder = ExpressionFinder()
     finder.registerExpressions(listOf(complexExpression))
     val expressionResults = finder.start(text)
-    expressionResults.forEach {
-        handleExpressionResults(finder, it, text)
-    }
+//    expressionResults.forEach {
+//        handleExpressionResults(finder, it, text)
+//    }
 }
