@@ -8,13 +8,13 @@ fun ExpressionResult.correspondingTokensText(tokens: List<Char>): String {
     return tokens.slice(this.range.first until this.range.last).joinToString("")
 }
 
-fun handleExpressionResult(
+fun <T> handleExpressionResult(
     expressionFinder: ExpressionFinder,
     expressionResult: ExpressionResult,
     tokens: List<Char>,
-    handle: ExpressionResultsHandlerContext.() -> Unit
-) {
-    ExpressionResultsHandlerContext(expressionFinder, expressionResult, tokens, handle).handle()
+    handle: ExpressionResultsHandlerContext<T>.() -> Result<T>
+): Result<T> {
+    return ExpressionResultsHandlerContext(expressionFinder, expressionResult, tokens, handle).handle()
 }
 
 val ExpressionResult.content: ExpressionResult
@@ -26,21 +26,43 @@ val ExpressionResult.content: ExpressionResult
         }
     }
 
-class ExpressionResultsHandlerContext(
+class ExpressionResultsHandlerContext<T>(
     val expressionFinder: ExpressionFinder,
     val expressionResult: ExpressionResult,
     val tokens: List<Char>,
-    val handle: ExpressionResultsHandlerContext.() -> Unit
+    val handle: ExpressionResultsHandlerContext<T>.() -> Result<T>
 ) {
-    fun continueWith(expressionResult: ExpressionResult, anotherHandler: ExpressionResultsHandlerContext.() -> Unit = handle) {
+    fun <R> continueWith(expressionResult: ExpressionResult, anotherHandler: ExpressionResultsHandlerContext<R>.() -> Result<R>) {
         expressionFinder.start(tokens, expressionResult.range).forEach {
             ExpressionResultsHandlerContext(expressionFinder, it, tokens, anotherHandler).anotherHandler()
         }
     }
 
-    fun continueWith(expressionResult: ExpressionResult, vararg registerExpressions: Expression, anotherHandler: ExpressionResultsHandlerContext.() -> Unit = handle) {
+    fun <R> continueWith(expressionResult: ExpressionResult) {
+        expressionFinder.start(tokens, expressionResult.range).forEach {
+            ExpressionResultsHandlerContext(expressionFinder, it, tokens, handle).handle()
+        }
+    }
+
+    fun <R> continueWith(expressionResult: ExpressionResult, vararg registerExpressions: Expression, anotherHandler: ExpressionResultsHandlerContext<R>.() -> Result<R>) {
         ExpressionFinder().apply { registerExpressions(registerExpressions.toList()) }.start(tokens, expressionResult.range).forEach {
             ExpressionResultsHandlerContext(expressionFinder, it, tokens, anotherHandler).anotherHandler()
+        }
+    }
+
+    fun <R> continueWith(expressionResult: ExpressionResult, vararg registerExpressions: Expression) {
+        ExpressionFinder().apply { registerExpressions(registerExpressions.toList()) }.start(tokens, expressionResult.range).forEach {
+            ExpressionResultsHandlerContext(expressionFinder, it, tokens, handle).handle()
+        }
+    }
+
+    fun <R> continueWithOne(expressionResult: ExpressionResult, vararg registerExpressions: Expression, anotherHandler: ExpressionResultsHandlerContext<R>.() -> Result<R>): Result<R> {
+        ExpressionFinder().apply { registerExpressions(registerExpressions.toList()) }.start(tokens, expressionResult.range).apply {
+            if (isNotEmpty()) {
+                return ExpressionResultsHandlerContext(expressionFinder, this[0], tokens, anotherHandler).anotherHandler()
+            } else {
+                return Error("is more than one", IntRange.EMPTY)
+            }
         }
     }
 
